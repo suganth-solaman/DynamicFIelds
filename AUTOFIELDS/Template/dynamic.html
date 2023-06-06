@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends "create_emp.html" %}
+{% block content %}
+  <div style="width:50%; margin:auto;">
+        <form class="inside" method="post" action="/dynamic"  style="display:block" >
+            {% csrf_token %}
+            <select class="form-select " aria-label="Default select example" name="form" id="form">
+                {% for forms in data %}
+              <option value="{{forms.id}}">{{forms.form}}</option>
+                {% endfor %}
+          </select><br>
+            <div class="parent">
+                <div class="dynamic" id="dynamic1">
+                    <label > Field</label>
+                    <input style="width:25%" type="text"  name="field1" placeholder="enter">
+                    <label > Type</label>
+                    <select  style="width:25%" type="text"  name="field1">
+                        <option value="input">Input Box</option>
+                        <option value="Check">Check Box</option>
+                        <option value="textarea">Text Area</option>
+                    </select>
+                    <i class="bi bi-plus-circle" style="font-size:30px; color:#008000;"></i>
+                </div>
+            </div>
+
+            <button  type="submit"> Submit</button>
+        </form>
+    </div>
+
+<script>
+
+     $(document).ready(function(){
+        var num = 1;
+        $(".parent").on("click",".bi", function(){
+
+            var old = $("#dynamic"+num).clone();
+            var altr = $(old).find("input[name=field"+num+"]");
+            var altrsel = $(old).find("select[name=field"+num+"]");
+
+            ++num;
+            $(altr).attr("name", "field"+num)
+            $(altrsel).attr("name", "field"+num)
+            $(old).attr("id","dynamic"+num)
+
+            var section = $(' <i class="bio bi-dash-circle" style="font-size:30px; color:red;"></i> ')
+
+            $(".parent").append(old)
+            console.log("hi",num);
+            if (num == 2){
+            console.log(num);
+            $("#dynamic"+num).append(section)
+            };
+
+        });
+        $(".parent").on("click",".bio", function(){
+        var old = $("#dynamic"+num).remove();
+        --num;
+        return;
+
+         });
+
+     });
+</script>
+{% endblock %}
+
+</body>
+</html>
