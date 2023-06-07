@@ -56,7 +56,11 @@ def create_employee(request):
             for key,value in post_data.items():
                 dynamic_data[key] = value[0]
             get_form = Forms.objects.get(id=int(form[0]))
-            Details.objects.create(details=get_form, name=name[0], worker_id=code[0], additional=dynamic_data )
+            modify, built = Details.objects.get_or_create(details=get_form )
+            modify.name = name[0]
+            modify.worker_id = code[0]
+            modify.additional = dynamic_data
+            modify.save()
             print(post_data,"aaaaaaaaaaaaaaaaaaaaaaaaaaa")
             print(dynamic_data, "bbbbbbbbbbbbbbbbbbbbbbb")
 
@@ -91,3 +95,48 @@ def view(request,pk):
         context['data']= data
     return render(request, 'view.html', context)
 
+
+def update(request,pk):
+    context = {}
+    data = Details.objects.filter(id=pk)
+    return_id = data[0].details.id
+    form_model = DynamicField.objects.filter(details__id=data[0].details.id)
+    additional = data[0].additional
+    field = form_model[0].fields
+    if form_model.exists():
+        field_detail = []
+        for key in field:
+            print(additional,field, key)
+            lable = f"<lable>{field[key][0]}</lable>"
+            if field[key][1] == "Check":
+                box = f"<input type='checkbox' style='width:25%' id={field[key][0]} name={field[key][0]} value={additional[field[key][0]]} >"
+            elif field[key][1] == "input":
+                box = f'<input type="text" id={field[key][0]} name={field[key][0]} placeholder="enter" value={additional[field[key][0]]}>'
+            else:
+                box = f'<textarea  id={field[key][0]} name={field[key][0]} value={additional[field[key][0]]} ></textarea>'
+            field_detail.append(lable)
+            field_detail.append(box)
+        context["field"] = field_detail
+        context["name"] = data[0].name
+        context["worker_id"] = data[0].worker_id
+    if request.method == "POST":
+        data = dict(request.POST)
+        print(data)
+        name = data.pop('name')
+        work_id = data.pop('code')
+        data.pop('csrfmiddlewaretoken')
+        data.pop('available')
+        data['forms'] = [additional['forms']]
+        print(data)
+        data = {x:y[0] for x,y in data.items()}
+        if "vaccinated" not in data:
+            data['vaccinated'] = "True"
+        uptodate = Details.objects.get(id=pk)
+        uptodate.name = name[0]
+        uptodate.worker_id = work_id[0]
+        uptodate.additional = data
+        uptodate.save()
+
+        return redirect('view',return_id)
+
+    return render(request, 'update.html', context)
