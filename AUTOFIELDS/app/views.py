@@ -1,4 +1,4 @@
-#inbuilt module
+# inbuilt module
 from django.shortcuts import render
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
@@ -10,29 +10,26 @@ from django.contrib.auth.forms import UserCreationForm
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+# user defined module
+from .models import Details, DynamicField, Forms
 
-#user defined module
-from .models import Details,DynamicField,Forms
+
 def create_employee(request):
     context = {}
     if request.method == "POST":
         post_data = dict(request.POST)
-        print(post_data)
+
         if 'form' in post_data:
             form_name = post_data['form'][0]
             Forms.objects.create(form=form_name)
-            print(request.POST)
         elif 'id' in post_data:
             id_form = int(post_data['id'][0])
             form_data = Forms.objects.filter(id=id_form)
             form_model = DynamicField.objects.filter(details__id=id_form)
-            print(form_model.exists(),"overtherrrrrrrrrrrrrrrr")
-
             context["form_data"] = form_data
-
             if form_model.exists():
                 field_detail = []
-                for key,value in form_model[0].fields.items():
+                for key, value in form_model[0].fields.items():
                     lable = f"<lable>{value[0]}</lable>"
                     if value[1] == "Check":
                         box = f"<input type='checkbox' style='width:25%' id={value[0]} name={value[0]} >"
@@ -51,52 +48,42 @@ def create_employee(request):
             form = post_data['forms']
             post_data.pop('name')
             post_data.pop('code')
-
             dynamic_data = {}
-            for key,value in post_data.items():
+            for key, value in post_data.items():
                 dynamic_data[key] = value[0]
             get_form = Forms.objects.get(id=int(form[0]))
-            modify, built = Details.objects.get_or_create(details=get_form )
+            modify, built = Details.objects.get_or_create(details=get_form)
             modify.name = name[0]
             modify.worker_id = code[0]
             modify.additional = dynamic_data
             modify.save()
-            print(post_data,"aaaaaaaaaaaaaaaaaaaaaaaaaaa")
-            print(dynamic_data, "bbbbbbbbbbbbbbbbbbbbbbb")
-
-
-
-
     data = Forms.objects.all()
     context["data"] = data
-    return render(request, 'create_emp.html',context)
+    return render(request, 'create_emp.html', context)
 
 
 def dynamic(request):
     context = {}
     if request.method == "POST":
         field = dict(request.POST)
-        print(field)
         get_form = Forms.objects.get(id=int(field['form'][0]))
         field.pop("csrfmiddlewaretoken")
         field.pop("form")
-        print(field)
         DynamicField.objects.get_or_create(details=get_form, fields=field)
-
     data = Forms.objects.all()
     context['data'] = data
     return render(request, 'dynamic.html', context)
 
 
-def view(request,pk):
+def view(request, pk):
     context = {}
     data = Details.objects.filter(details__id=pk)
     if data.exists():
-        context['data']= data
+        context['data'] = data
     return render(request, 'view.html', context)
 
 
-def update(request,pk):
+def update(request, pk):
     context = {}
     data = Details.objects.filter(id=pk)
     return_id = data[0].details.id
@@ -106,7 +93,6 @@ def update(request,pk):
     if form_model.exists():
         field_detail = []
         for key in field:
-            print(additional,field, key)
             lable = f"<lable>{field[key][0]}</lable>"
             if field[key][1] == "Check":
                 box = f"<input type='checkbox' style='width:25%' id={field[key][0]} name={field[key][0]} value={additional[field[key][0]]} >"
@@ -121,14 +107,12 @@ def update(request,pk):
         context["worker_id"] = data[0].worker_id
     if request.method == "POST":
         data = dict(request.POST)
-        print(data)
         name = data.pop('name')
         work_id = data.pop('code')
         data.pop('csrfmiddlewaretoken')
         data.pop('available')
         data['forms'] = [additional['forms']]
-        print(data)
-        data = {x:y[0] for x,y in data.items()}
+        data = {x: y[0] for x, y in data.items()}
         if "vaccinated" not in data:
             data['vaccinated'] = "True"
         uptodate = Details.objects.get(id=pk)
@@ -136,7 +120,5 @@ def update(request,pk):
         uptodate.worker_id = work_id[0]
         uptodate.additional = data
         uptodate.save()
-
-        return redirect('view',return_id)
-
+        return redirect('view', return_id)
     return render(request, 'update.html', context)

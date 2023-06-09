@@ -47,19 +47,29 @@
             $(altr).attr("name", "field"+num)
             $(altrsel).attr("name", "field"+num)
             $(old).attr("id","dynamic"+num)
+            if (num > 2){
+            var remo = $(old).find("i[id=hi"+(num-1)+"]");
+            $(remo).attr("id", "hi"+num)
+            };
 
-            var section = $(' <i class="bio bi-dash-circle" style="font-size:30px; color:red;"></i> ')
+            var section = $(' <i class="bio bi-dash-circle" id="hi2" style="font-size:30px; color:red;"></i> ')
 
             $(".parent").append(old)
-            console.log("hi",num);
             if (num == 2){
             console.log(num);
             $("#dynamic"+num).append(section)
             };
 
+
+
+
+
         });
         $(".parent").on("click",".bio", function(){
-        var old = $("#dynamic"+num).remove();
+        var remo = $(this).attr("id")
+        console.log(remo.slice(2,3));
+        var en = remo.slice(2,3)
+        var old = $("#dynamic"+en).remove();
         --num;
         return;
 
